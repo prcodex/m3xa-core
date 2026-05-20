@@ -1,0 +1,23 @@
+# Blocks any PR that leaks a real source name into the public repo.
+# The hashed blocklist is at .anonymization-blocklist.sha256.
+# See docs/source_naming.md for the convention and tools/check_anonymization.py
+# for the implementation.
+
+name: anonymization check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  anonymization-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Scan repo for forbidden source names
+        run: python tools/check_anonymization.py

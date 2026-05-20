@@ -1,0 +1,31 @@
+flowchart LR
+    subgraph world["The world"]
+        SRC1[Bank1 research]
+        SRC2[Expert1, Expert2]
+        SRC3[Wire1 / Wire2]
+        SRC4[Podcast1..5]
+    end
+
+    SCR[Scrapers · 6 templates]
+    UF[(unified_feed · LanceDB)]
+    PIPE[7-actor pipeline]
+    BOT[Distribution]
+    USER[User]
+    SA[Self-awareness loop · 9 components]
+    BODY[BODY.md]
+
+    SRC1 --> SCR
+    SRC2 --> SCR
+    SRC3 --> SCR
+    SRC4 --> SCR
+    SCR --> UF
+    USER -- query --> PIPE
+    UF -- retrieve --> PIPE
+    PIPE -- response --> BOT
+    BOT --> USER
+    USER -. feedback .-> SA
+    PIPE -. eval output .-> SA
+    SCR -. health pings .-> SA
+    SA -. amendments .-> PIPE
+    SA -. drift signals .-> BODY
+    BODY -. read-before-edit .-> SCR

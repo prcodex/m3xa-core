@@ -1,0 +1,64 @@
+# Cron patterns — anonymized.
+#
+# This file documents the SHAPE of the schedule the live system runs.
+# Real hostnames, real bot tokens, real script paths are not here.
+# Your private fork translates these patterns into actual crontab entries.
+
+scrapers:
+  - alias: substack_expert1
+    schedule: "*/30 * * * *"            # every 30 minutes
+    server: ScraperHub
+    purpose: Fetch new posts from Expert1 (Substack template)
+
+  - alias: rss_wire1
+    schedule: "*/15 * * * *"            # every 15 minutes
+    server: ScraperHub
+    purpose: Poll Wire1 RSS feed
+
+  - alias: youtube_podcast4
+    schedule: "0 */2 * * *"             # every 2 hours
+    server: ScraperHub
+    purpose: New-episode check + transcript extraction
+
+  - alias: twitter_expert2
+    schedule: "*/20 * * * *"
+    server: ScraperHub
+    purpose: Fetch + translate + embed new threads
+
+self_awareness:
+  - alias: lessons_indexer
+    schedule: "0 7 * * *"               # daily 07:00 UTC
+    server: RagHost
+    purpose: Re-parse LESSONS.md into the runtime index
+
+  - alias: soul_amendment_scan
+    schedule: "30 3,9,15,21 * * *"      # 4×/day at off-peak times
+    server: RagHost
+    purpose: Detect recurring failure patterns; draft proposed amendments
+
+  - alias: log_manager
+    schedule: "0 7 * * *"               # daily after the indexer
+    server: RagHost
+    purpose: Rotate logs, compact SQLite DBs
+
+  - alias: proactive_intel
+    schedule: "*/15 * * * *"            # every 15 minutes
+    server: RagHost
+    purpose: Run the 5 triggers; emit mini reports
+
+distribution:
+  - alias: intel_summary
+    schedule: "0 10,12,14,16,18,20,22,0 * * *"   # 8×/day at 2-hour intervals
+    server: RagHost
+    purpose: Generate the analyst brief; post to @MainBot
+
+infrastructure:
+  - alias: health_check
+    schedule: "*/5 * * * *"             # every 5 minutes
+    server: RagHost
+    purpose: Probe all scrapers + the pipeline; feed health_caveats_writer
+
+  - alias: body_in_sync_runtime
+    schedule: "0 6 * * *"               # daily 06:00 UTC
+    server: RagHost
+    purpose: Runtime-side mirror of the CI sync check (catches drift between cron-deploy and repo)

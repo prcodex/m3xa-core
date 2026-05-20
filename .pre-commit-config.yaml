@@ -1,0 +1,36 @@
+# Pre-commit hooks for m3xa-core.
+#
+# Install once:   pip install pre-commit && pre-commit install
+# Run on demand:  pre-commit run --all-files
+#
+# Hooks:
+#   - regenerate-body          rewrites BODY.md AUTOGEN sections
+#   - check-stack-in-sync      every pyproject dep has docs/stack/<name>.md
+#   - check-anonymization      no real source names anywhere in the repo
+
+repos:
+  - repo: local
+    hooks:
+      - id: regenerate-body
+        name: Regenerate BODY.md AUTOGEN sections
+        entry: python tools/regenerate_body.py
+        language: system
+        files: ^(m3xa_core/.*\.py|expertises/.*\.md|concepts/.*\.md|pyproject\.toml|tests/.*\.py|BODY\.md)$
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: check-stack-in-sync
+        name: Every dependency has a doc under docs/stack/
+        entry: python tools/check_stack_in_sync.py
+        language: system
+        files: ^(pyproject\.toml|docs/stack/.*\.md)$
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: check-anonymization
+        name: No real source names in the repo
+        entry: python tools/check_anonymization.py
+        language: system
+        files: \.(md|py|yaml|yml|json|toml|txt|mdc|mmd)$
+        pass_filenames: false
+        stages: [pre-commit]

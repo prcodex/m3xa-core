@@ -1,0 +1,27 @@
+flowchart LR
+    Q[Query + response]
+    SE[1. self_evaluator]
+    HC[2. health_caveats_writer]
+    SA[3. soul_amendment_engine]
+    LI[4. lessons_indexer]
+    CL[5. conversation_learner]
+    AH[6. auto_healer]
+    PI[7. proactive_intel]
+    LM[8. log_manager]
+    CIL[9. claude_interaction_log]
+    HUMAN{Human approval}
+    SOUL[Soul modules]
+
+    Q --> SE
+    SE -. failures .-> HC
+    SE -. patterns .-> SA
+    Q -. follow-ups .-> CL
+    CL -. quality drop .-> SA
+    HC -. RAG ctx .-> Q
+    SA --> HUMAN
+    HUMAN -- approved --> SOUL
+    SOUL -. healing .-> AH
+    AH -. fixes .-> SE
+    PI -. triggers .-> Q
+    LM -. rotates .-> CIL
+    CIL -. context .-> Q

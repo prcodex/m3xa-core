@@ -1,0 +1,32 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+
+# Secrets — never commit
+.env
+.env.*
+*.key
+*.pem
+credentials.json
+
+# Local LanceDB data and intermediate dumps
+lancedb_data/
+*.lance/
+*.db
+
+# Local notes (kept out of public repo)
+NOTES_LOCAL.md
+.scratch/
+.anonymization-blocklist.txt   # plain-text version of the blocklist (only hashes ship)
+
+# OS junk
+.DS_Store
+Thumbs.db
