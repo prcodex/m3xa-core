@@ -27,6 +27,16 @@ pytest tests/                            # 4. all tests green
 
 Pre-commit runs the first three on every commit. CI re-runs all four on every PR.
 
+### Optional pre-publication AI gate
+
+For high-stakes publications (you're about to push a doc that lifts internal architecture into a public repo), also run:
+
+```bash
+python tools/check_anonymization_ai.py path/to/file.md     # needs ANTHROPIC_API_KEY
+```
+
+The hash-based `check_anonymization.py` catches *known* tokens; the AI check catches *indirect* identifications — "the Wall Street firm founded in 1869" still de-anonymizes a bank without naming it. Use both for high-stakes pushes, hash-only for routine commits. See `LESSONS.md` entry dated 2026-05-21 for the why.
+
 ## Adding a concept essay
 
 Concept essays live in [`concepts/`](concepts/). They're the most valuable contribution — what makes the repo didactic.

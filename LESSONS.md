@@ -77,3 +77,13 @@ Skip ordinary bugs. Capture lessons whose root cause was a structural choice you
 **Why it matters:** A single PR six months from now that mentions a real bank name slips past a tired reviewer. CI doesn't get tired. The check is `tools/check_anonymization.py`; the blocklist is SHA256-hashed at `.anonymization-blocklist.sha256` so readers can't reverse it.
 
 **How to apply:** Generate the blocklist locally from `.anonymization-blocklist.txt` (which is gitignored), hash each line, commit the hash file. CI reads the hash file at PR time and rejects any matching token in the diff.
+
+---
+
+## 2026-05-21 · Regex anonymization checks substring-match in non-obvious ways
+
+**Lesson:** A blocklist of bank/expert/wire names without word boundaries will substring-match inside ordinary English words. `ubs` matches inside `pubs`, `Substack`, `subset`. Five false positives blocked a real publication and required a manual decision.
+
+**Why it matters:** The check fails *loudly* on false positives, which costs trust in the gate. Worse, the temptation to ignore future flags grows. The fix is two-layered: tighten the regex with `\b` word boundaries, AND add an AI second-pass for high-stakes gates that catches what the literal-string check misses (indirect references, novel mentions).
+
+**How to apply:** Routine pre-commit → `tools/check_anonymization.py` (hash-based, fast, deterministic). Pre-publication gate → also run `tools/check_anonymization_ai.py` (one Claude call, ~$0.02, catches indirect identifications a blocklist can't enumerate). Both layers, belt + suspenders, for any public push from a private system.
