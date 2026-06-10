@@ -96,6 +96,25 @@ def gen_scrapers() -> str:
     return "\n".join(rows)
 
 
+def gen_souls() -> str:
+    soul_dir = REPO / "soul_modules"
+    if not soul_dir.exists():
+        return "_(no soul_modules/ directory)_"
+    rows = ["| Soul | File | Type | When loaded |", "|---|---|---|---|"]
+    for p in sorted(soul_dir.glob("*.md")):
+        if p.name == "README.md":
+            continue
+        text = p.read_text(encoding="utf-8")
+        fm = _parse_frontmatter(text)
+        name = fm.get("name") or p.stem
+        soul_type = fm.get("type") or "?"
+        desc = (fm.get("description") or "")[:80]
+        rows.append(
+            f"| {name} | [`soul_modules/{p.name}`](./soul_modules/{p.name}) | {soul_type} | {desc} |"
+        )
+    return "\n".join(rows)
+
+
 def gen_expertises() -> str:
     exp_dir = REPO / "expertises"
     if not exp_dir.exists():
@@ -296,6 +315,7 @@ SECTIONS = {
     "self_awareness": gen_self_awareness,
     "scrapers": gen_scrapers,
     "expertises": gen_expertises,
+    "souls": gen_souls,
     "concepts": gen_concepts,
     "stack": gen_stack,
     "env_vars": gen_env_vars,
