@@ -2,59 +2,82 @@
 
 The Soul of the agent. See [`concepts/the_house.md`](../concepts/the_house.md) for the metaphor.
 
-Each soul module is a markdown file with YAML frontmatter. The frontmatter declares when the module loads; the body is the analytical lens the synthesizer reads.
+This directory follows the **production layout** of the live system: each soul is a **monolithic markdown file per variant**, not a set of decomposed voice / scope-filter / lens modules. The router picks the variant at query time; the loaded soul is the *whole* system prompt the synthesizer reads (plus the runtime-injected time / data / agent context blocks).
 
-## What's in this directory
+## The two variants in this repo
 
-This is a **template repository**. The public repo ships:
+| Variant | File | Audience | Scope |
+|---|---|---|---|
+| `global` | [`global.md`](./global.md) | `@MainBot` | Global macro, geopolitics, energy, fiscal, CountryB |
+| `brazil` | [`brazil.md`](./brazil.md) | `@RegionalBot` | CountryA-specific macro, fiscal, political economy |
 
-- [`_template_module.md`](_template_module.md) — a blank module showing the frontmatter shape and the body conventions.
+Each soul is a single file that covers:
 
-Your private fork adds the actual modules — the editorial voice, the analytical lens for each expertise area, the refusal rules, the output format conventions. None of those belong here.
+1. **Identity** — who the analyst is, what audience
+2. **Voice** — plain prose, lead with the answer, no boilerplate
+3. **Length tiers** — quick / data / analytical / brainstorm caps
+4. **Table formatting** — width and shape rules
+5. **Source hierarchy** — tiered, with explicit aliases from `docs/source_naming.md`
+6. **Citation discipline** — `[Source · YYYY-MM-DD]` requirement
+7. **Both-sides rule** (geopolitical only) — mandatory missing-side acknowledgement
+8. **Temporal reasoning** — how to use injected current time + calendar
+9. **Local conventions** (regional variants only) — terminology, vocabulary
+10. **Refusal rules** — what to decline and how
+11. **Failure modes** — corrections accumulated from past responses (these often come from the `soul_amendment_engine`)
+
+The soul is hot-reloadable in production with a 5-minute cache (see `_load_soul` in `concepts/the_house.md` for the pattern). Edits propagate without a restart.
+
+## Why monolithic, not modular
+
+The didactic temptation is to decompose: separate "voice" / "refusal" / "both-sides" / "lens" files that compose at runtime. The live system tried that and converged on monolithic-per-variant because:
+
+1. **Edit locality.** When a failure-mode correction lands, you edit one file, not five.
+2. **Diff legibility.** A soul change is one diff, not a multi-file change set with composition order to reason about.
+3. **Hot reload simplicity.** One file = one `mtime` check = one cache key per variant.
+4. **Composition order is implicit.** Inside one file, sections are read in document order; no separate "assembler" loading rule needs to be maintained alongside the modules.
+
+The composition logic (voice + refusal + scope filter + lens) still exists conceptually — it just lives **inside** the soul rather than as separate files. Section headings inside `global.md` and `brazil.md` mirror what would have been separate modules in a decomposed layout.
 
 ## The frontmatter
 
 ```yaml
 ---
-name: <slug — matches the filename without .md>
-description: <one-line summary the router reads to decide whether to load this>
+name: <variant name — matches filename without .md>
+description: <one-line summary>
 version: <semver>
-type: expertise | kernel | scope_filter
-applies_to: <domain — e.g. macro, geo, ai, region>
-trigger_keywords: [keyword1, keyword2, ...]
-trigger_entities: [Inst1, Pol1, ...]
+type: kernel
+applies_to: <macro | region | all>
+trigger_keywords: []
+trigger_entities: []
 tokens_estimate: <integer>
 ---
 ```
 
-## The body conventions
+`trigger_keywords` and `trigger_entities` are empty for both variants — the router picks the variant by **scope** (bot / domain / explicit filter), not by keyword. See `m3xa_core/actors/router.py` for the scope-detection logic.
 
-A good soul module covers:
-
-1. **What this lens covers** — and what it doesn't (cross-references to adjacent modules)
-2. **Source hierarchy** — which tiers matter for this lens (Wire / Expert / Institutional from `docs/source_naming.md`)
-3. **Domain conventions** — terminology, units, common abbreviations the synthesizer should preserve
-4. **Analytical framing** — the right way to think about this domain. *This is where the voice lives.*
-5. **Output format preferences** — what tables, what charts, what citation style
-6. **Failure modes** — corrections accumulated from past responses (these often come from the `soul_amendment_engine`)
-
-## How modules are picked
+## How the variant is picked
 
 At query time:
 
-1. The router (Actor 1.5) reads each module's `description` field and picks 1-3 modules matching the query topic.
-2. The assembler (Actor 2) concatenates the picked modules into the synthesizer's system prompt.
-3. The kernel (`type: kernel`) and any `type: scope_filter` modules are **always loaded** alongside the routed picks.
+1. The classifier tags the query.
+2. The router decides scope (`global` vs `regional`) from the bot context, explicit `#brazil` / `#macro` shortcuts, or scope-keyword detection.
+3. The assembler loads the matching variant file in full.
+4. Runtime context (current time, calendar window, retrieved docs, agent blocks) is injected after the soul.
+5. One synthesizer call.
 
-## What is **never** in this directory
+## What's never in this directory
 
-- Real proprietary editorial voice — that's in the reader's private fork
-- Real bank/expert names — even as examples
-- Real refusal rules tied to specific entities
+- Real source names — even as examples. Use only the aliases from `docs/source_naming.md`.
+- Real bot tokens, API keys, hostnames, or recipient addresses.
+- The actual proprietary editorial voice of the live system. The souls here are the *pattern*, not the live prompt.
+- The actual entity registry contents.
 
-The `_template_module.md` shows the shape with placeholders.
+## The template
+
+[`_template_module.md`](_template_module.md) — a frontmatter + body shape for **a new soul variant** (e.g. adding an AI-specialist variant). The template predates the monolithic decision and uses the older "expertise module" framing; readers extending the pattern should follow the structure of `global.md` and `brazil.md` instead.
 
 ## See also
 
-- [`concepts/the_house.md`](../concepts/the_house.md) — the room metaphor
+- [`concepts/the_house.md`](../concepts/the_house.md) — the room metaphor (soul / body / mind / memory)
 - [`concepts/soul_amendment_engine.md`](../concepts/soul_amendment_engine.md) — how the engine proposes edits and why approval is required
+- [`docs/source_naming.md`](../docs/source_naming.md) — the alias taxonomy used throughout the souls
