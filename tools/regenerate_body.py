@@ -165,9 +165,14 @@ def gen_env_vars() -> str:
     pat = re.compile(
         r"os\.(?:getenv|environ\.get|environ\[)\s*\(?\s*[\"']([A-Z][A-Z0-9_]+)[\"']"
     )
-    for p in REPO.rglob("*.py"):
-        if any(seg in p.parts for seg in (".venv", "venv", "__pycache__", ".git")):
-            continue
+    # Sort the rglob so file traversal order is deterministic across OSes
+    # (Path.rglob returns filesystem-order without sorting, which yields
+    # different "first seen" results on macOS vs Linux CI runners).
+    py_files = sorted(
+        p for p in REPO.rglob("*.py")
+        if not any(seg in p.parts for seg in (".venv", "venv", "__pycache__", ".git"))
+    )
+    for p in py_files:
         try:
             text = p.read_text(encoding="utf-8")
         except Exception:
@@ -180,9 +185,7 @@ def gen_env_vars() -> str:
     pat2 = re.compile(
         r"os\.(?:getenv|environ\.get|environ\[)\s*\(?\s*[\"'](" + "|".join(re.escape(m) for m in matches) + r")[\"']"
     )
-    for p in REPO.rglob("*.py"):
-        if any(seg in p.parts for seg in (".venv", "venv", "__pycache__", ".git")):
-            continue
+    for p in py_files:
         try:
             text = p.read_text(encoding="utf-8")
         except Exception:
