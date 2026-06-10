@@ -19,5 +19,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Debug — show drift diff (temporary)
+        run: |
+          cp BODY.md /tmp/before.md
+          python tools/regenerate_body.py
+          diff -u /tmp/before.md BODY.md || true
       - name: Check BODY.md is in sync with code
-        run: python tools/regenerate_body.py --check
+        run: |
+          git checkout -- BODY.md
+          python tools/regenerate_body.py --check
