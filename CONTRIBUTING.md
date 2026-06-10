@@ -1,6 +1,8 @@
 # Contributing to m3xa-core
 
-This repo is a **public, didactic** reference. Contributions that improve clarity, add patterns, or fix mistakes are welcome. Contributions that reveal proprietary specifics (real source names, real credentials, real hostnames) are not.
+This repo is now a **public reference of the live M3xA system** — production souls, real source list, real environment map, with credentials stripped. Contributions that improve clarity, add patterns, or fix mistakes are welcome.
+
+**Do not commit credentials** — API keys, bot tokens, OAuth secrets, email passwords. The anonymization tooling under `tools/` is retained for credential leak detection (you can populate `.anonymization-blocklist.txt` locally with any token strings you want to fail the build on).
 
 ## Before you contribute
 
